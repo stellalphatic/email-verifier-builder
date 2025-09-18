@@ -1,9 +1,11 @@
 
 FROM reacherhq/backend:latest
 
-WORKDIR /app
+USER root
 
 RUN apk add --no-cache python3 py3-pip
+
+WORKDIR /app
 
 COPY proxy.py .
 COPY run.sh .
