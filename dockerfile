@@ -11,7 +11,7 @@ COPY proxy.py .
 COPY run.sh .
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --break-system-packages --no-cache-dir -r requirements.txt
 
 RUN chmod +x run.sh
 
