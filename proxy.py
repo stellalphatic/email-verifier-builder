@@ -1,32 +1,37 @@
 import json
-import subprocess
+import requests
 import os
 
 def lambda_handler(event, context):
     try:
-        # Extract email from API Gateway event
+        # The URL for the Reacher backend's API endpoint.
+        # It runs on localhost at port 8080.
+        url = "http://127.0.0.1:8080/v0/check_email"
+
+        # Extract the email from the API Gateway event body.
         body = json.loads(event['body'])
         to_email = body['to_email']
+        
+        # Prepare the payload for the API request.
+        payload = {
+            "to_email": to_email
+        }
+        
+        # Send a POST request to the Reacher backend.
+        response = requests.post(url, json=payload)
+        response.raise_for_status() 
 
-        # Call the Rust CLI tool with the email
-        result = subprocess.run(
-            ["/usr/local/bin/check_if_email_exists", to_email, "--json"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-
-        output = json.loads(result.stdout)
+        output = response.json()
 
         return {
             'statusCode': 200,
             'body': json.dumps(output)
         }
 
-    except subprocess.CalledProcessError as e:
+    except requests.exceptions.RequestException as e:
         return {
             'statusCode': 500,
-            'body': json.dumps({'error': f"Failed to run email check: {e.stderr}"})
+            'body': json.dumps({'error': f"Failed to connect to the email verification backend: {str(e)}"})
         }
     except json.JSONDecodeError:
         return {
