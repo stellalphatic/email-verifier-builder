@@ -14,4 +14,4 @@ RUN pip install --break-system-packages --no-cache-dir -r requirements.txt
 
 RUN chmod +x run.sh
 
-CMD ["./run.sh"]
+CMD ["/var/task/run.sh"]
