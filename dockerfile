@@ -8,7 +8,10 @@ WORKDIR /var/task
 
 COPY proxy.py .
 COPY requirements.txt .
+COPY run.sh .
 
 RUN pip install --break-system-packages --no-cache-dir -r requirements.txt
 
-CMD python3 proxy.py
+RUN chmod +x run.sh
+
+CMD ["/var/task/run.sh"]
