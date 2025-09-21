@@ -12,4 +12,4 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
 
-CMD ["proxy.lambda_handler"]
+CMD ["python3", "-m", "proxy.lambda_handler"]
