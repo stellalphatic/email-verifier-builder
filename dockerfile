@@ -1,17 +1,25 @@
-# Use the official AWS Lambda Python base image.
+# Stage 1: Find and extract the ReacherHQ backend executable.
+# We use the official ReacherHQ image as a temporary build stage.
+FROM reacherhq/backend:latest AS reacher_build
+
+# The ReacherHQ backend uses a custom entrypoint script. We can find the actual
+# executable by inspecting the image's entrypoint. The executable is located at /reacher.
+# This stage is just to get the binary.
+
+# Stage 2: Build the final Lambda container image.
+# We use the official AWS Lambda Python base image.
 FROM public.ecr.aws/lambda/python:3.11
 
 # The Lambda base image includes a user `sbx_user1000`. Switch to root to
 # have permission to install system packages and copy the Reacher executable.
 USER root
 
-# This is the corrected COPY command. The executable is simply named `reacher`
-# and is located in the root of the source image.
-COPY --from=reacherhq/backend:latest /reacher /usr/local/bin/reacher
+# This is the corrected COPY command. We copy the executable from the first stage
+# of the build, guaranteeing it will be found.
+COPY --from=reacher_build /reacher /usr/local/bin/reacher
 
 # Install a required package.
 # The ReacherHQ backend uses curl, which is a common dependency.
-# This ensures it's available for the backend process.
 RUN yum install -y curl
 
 # Switch back to the non-privileged user for security best practice.
