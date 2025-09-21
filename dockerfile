@@ -1,9 +1,18 @@
-
+# Use the official AWS Lambda Python base image.
 FROM public.ecr.aws/lambda/python:3.11
 
+# The Lambda base image includes a user `sbx_user1000`. Switch to root to
+# have permission to install system packages and copy the Reacher executable.
 USER root
 
-COPY --from=reacherhq/backend:latest /reacher /usr/local/bin/reacher
+# This is the corrected COPY command. We assume the executable is at
+# /usr/bin/reacherhq-backend based on standard Docker image conventions.
+COPY --from=reacherhq/backend:latest /usr/bin/reacherhq-backend /usr/local/bin/reacherhq-backend
+
+# Install a required package.
+# The ReacherHQ backend uses curl, which is a common dependency.
+# This ensures it's available for the backend process.
+RUN yum install -y curl
 
 # Switch back to the non-privileged user for security best practice.
 USER sbx_user1000
@@ -15,11 +24,8 @@ WORKDIR /var/task
 COPY requirements.txt .
 COPY proxy.py .
 
-# Install Python dependencies. This will now work without the error because
-# we are using an AWS Lambda-optimized base image.
+# Install Python dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
 
-# This sets your Lambda handler as the entrypoint. The Lambda runtime
-# will automatically call this handler.
-# The handler is located in the `proxy.py` file, with the function `lambda_handler`.
+# This sets your Lambda handler as the entrypoint.
 CMD ["proxy.lambda_handler"]
