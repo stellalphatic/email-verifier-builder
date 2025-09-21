@@ -1,3 +1,4 @@
+
 FROM reacherhq/backend:latest
 
 USER root
@@ -8,10 +9,7 @@ WORKDIR /var/task
 
 COPY proxy.py .
 COPY requirements.txt .
-COPY run.sh .
 
-RUN pip install --break-system-packages --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN chmod +x run.sh
-
-CMD ["/var/task/run.sh"]
+CMD ["proxy.lambda_handler"]
