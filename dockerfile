@@ -5,9 +5,9 @@ FROM public.ecr.aws/lambda/python:3.11
 # have permission to install system packages and copy the Reacher executable.
 USER root
 
-# This is the corrected COPY command. We assume the executable is at
-# /usr/bin/reacherhq-backend based on standard Docker image conventions.
-COPY --from=reacherhq/backend:latest /usr/bin/reacherhq-backend /usr/local/bin/reacherhq-backend
+# This is the corrected COPY command. The executable is simply named `reacher`
+# and is located in the root of the source image.
+COPY --from=reacherhq/backend:latest /reacher /usr/local/bin/reacher
 
 # Install a required package.
 # The ReacherHQ backend uses curl, which is a common dependency.

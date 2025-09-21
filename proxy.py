@@ -36,7 +36,7 @@ def start_reacher_backend():
         try:
             # The executable is named 'reacher' and is located in the root of the
             # ReacherHQ image.
-            REACHER_PROCESS = subprocess.Popen(["/reacher"])
+            REACHER_PROCESS = subprocess.Popen(["/usr/local/bin/reacher"])
             
             # Use a health check to wait for the backend to start.
             health_url = "http://127.0.0.1:8080/healthz"
