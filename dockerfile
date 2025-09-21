@@ -11,4 +11,4 @@ COPY requirements.txt .
 
 RUN pip install --break-system-packages --no-cache-dir -r requirements.txt
 
-CMD /usr/local/bin/reacherhq-backend & python3 proxy.py
+CMD python3 proxy.py
