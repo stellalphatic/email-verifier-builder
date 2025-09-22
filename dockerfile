@@ -4,9 +4,9 @@ FROM public.ecr.aws/lambda/python:3.11
 # Switch to the root user for installation and copying.
 USER root
 
-# This is the crucial step. We mount the entire ReacherHQ image
-# and copy its entire filesystem into our build.
-COPY --from=reacherhq/backend:latest / /
+# This is the corrected COPY command. We copy the /usr/local/bin directory
+# from the ReacherHQ image, which contains the executable.
+COPY --from=reacherhq/backend:latest /usr/local/bin/ /usr/local/bin/
 
 # Install the `yum` package manager as a dependency.
 RUN yum install -y yum
@@ -29,4 +29,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # The Lambda handler is set as the entrypoint. The proxy script will now
 # dynamically find the Reacher executable.
-CMD ["proxy.lambda_handler"]
+CMD ["proxy.lambda_handler"]    
