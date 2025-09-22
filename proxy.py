@@ -15,9 +15,18 @@ logger = logging.getLogger(__name__)
 # The `reacherhq/backend` runs on port 8080 by default.
 REACHER_URL = "http://127.0.0.1:8080/v0/check_email"
 
+# A list of possible paths for the 'reacher' executable
+REACHER_PATHS = [
+    "/reacher",
+    "/usr/bin/reacher",
+    "/usr/local/bin/reacher",
+    "/reacherhq-backend"
+]
+
 # Use a lock to ensure only one thread tries to start the backend at a time
 backend_lock = threading.Lock()
 REACHER_PROCESS = None
+REACHER_EXECUTABLE_PATH = None
 
 def start_reacher_backend():
     """
@@ -25,18 +34,28 @@ def start_reacher_backend():
     This function is designed to be idempotent and only starts the process once.
     """
     global REACHER_PROCESS
+    global REACHER_EXECUTABLE_PATH
     
     with backend_lock:
         if REACHER_PROCESS and REACHER_PROCESS.poll() is None:
             logger.info("Reacher backend is already running.")
             return
 
-        logger.info("Starting Reacher backend as a subprocess...")
+        # Find the correct executable path dynamically
+        for path in REACHER_PATHS:
+            if os.path.isfile(path) and os.access(path, os.X_OK):
+                REACHER_EXECUTABLE_PATH = path
+                break
+        
+        if not REACHER_EXECUTABLE_PATH:
+            logger.error(f"Failed to find a valid executable for ReacherHQ in the following paths: {REACHER_PATHS}")
+            raise Exception("Backend executable not found.")
+
+        logger.info(f"Starting Reacher backend from {REACHER_EXECUTABLE_PATH} as a subprocess...")
         
         try:
-            # The executable is named 'reacher' and is located in the root of the
-            # ReacherHQ image.
-            REACHER_PROCESS = subprocess.Popen(["/usr/local/bin/reacher"])
+            # The executable is named 'reacher' and is now located at this new path
+            REACHER_PROCESS = subprocess.Popen([REACHER_EXECUTABLE_PATH])
             
             # Use a health check to wait for the backend to start.
             health_url = "http://127.0.0.1:8080/healthz"
